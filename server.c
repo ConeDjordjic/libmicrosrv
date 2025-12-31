@@ -12,9 +12,13 @@ static char *cstr_dup(const char *s) {
   return p;
 }
 
-Endpoint new_endpoint(char *path, HttpMethod method, EndpointHandler handler) {
-  Endpoint endpoint = {
-      .path = path, .len = strlen(path), .method = method, .handler = handler};
+Endpoint new_endpoint(char *path, HttpMethod method, EndpointHandler handler,
+                      void *ctx) {
+  Endpoint endpoint = {.path = path,
+                       .len = strlen(path),
+                       .method = method,
+                       .handler = handler,
+                       .ctx = ctx};
 
   return endpoint;
 }
@@ -60,6 +64,7 @@ int endpoint_vec_push(EndpointVec *vec, Endpoint ep) {
   vec->items[vec->len].path = copy;
   vec->items[vec->len].len = strlen(copy);
   vec->items[vec->len].handler = ep.handler;
+  vec->items[vec->len].ctx = ep.ctx;
 
   vec->len++;
 

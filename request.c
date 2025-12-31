@@ -16,7 +16,7 @@ static int send_404(int client_fd, HttpRequest *req) {
                          HTTP_STATUS_NOT_FOUND) < 0)
     return -1;
 
-  printf("[LOG] Handler not found\n");
+  printf("[LOG] Handler not found for path: %s\n", req->path);
   return (send_response(client_fd, &resp) < 0) ? -1 : 0;
 }
 
@@ -396,9 +396,11 @@ ssize_t handle_client(int *client_fd, ServerConfig *config) {
   parsed_ok = 1;
 
   printf("[LOG] Received request:\n");
+
   printf("  path=%s len=%zu method=%s\n", req.path, req.path_len,
          http_method_string(req.method));
 
+#ifdef DEBUG
   printf("=== HEADERS (%zu bytes) ===\n", req.header_len);
   fwrite(req.header, 1, req.header_len, stdout);
   printf("\n");
@@ -408,13 +410,15 @@ ssize_t handle_client(int *client_fd, ServerConfig *config) {
     fwrite(req.body, 1, req.body_len, stdout);
     printf("\n");
   }
+#endif /* ifdef DEBUG */
 
   int matched = 0;
   for (size_t i = 0; i < config->endpoints.len; i++) {
     if ((strcmp(config->endpoints.items[i].path, req.path) == 0) &&
         (config->endpoints.items[i].method == req.method)) {
       matched = 1;
-      config->endpoints.items[i].handler(fd, &req);
+      config->endpoints.items[i].handler(fd, &req,
+                                         config->endpoints.items[i].ctx);
       break;
     }
   }

@@ -12,13 +12,14 @@
 
 #define PORT 8080
 
-typedef int (*EndpointHandler)(int client_fd, HttpRequest *req);
+typedef int (*EndpointHandler)(int client_fd, HttpRequest *req, void *ctx);
 
 typedef struct {
   HttpMethod method;
   char *path;
   size_t len;
   EndpointHandler handler;
+  void *ctx;
 } Endpoint;
 
 typedef struct {
@@ -40,6 +41,7 @@ int endpoint_vec_free(EndpointVec *vec);
 
 int endpoint_vec_push(EndpointVec *vec, Endpoint ep);
 
-Endpoint new_endpoint(char *path, HttpMethod method, EndpointHandler handler);
+Endpoint new_endpoint(char *path, HttpMethod method, EndpointHandler handler,
+                      void *ctx);
 
 #endif // !SERVER_H
